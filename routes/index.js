@@ -57,7 +57,16 @@ router.post(
           },
           { new: true }
         );
+        console.log(currentUser, "current user here");
         res.json({ success: true, currentUser });
+        // res.json({
+        //   profile: {
+        //     username: followUser.username,
+        //     bio: followUser.bio,
+        //     image: followUser.image,
+        //     following: followUser.follower.includes(currentUser.username),
+        //   },
+        // });
       } else if (
         findUser.username !== followUser.username ||
         followUser.username !== findUser.username
@@ -70,6 +79,25 @@ router.post(
           message: `Already following ${followUser.username} `,
         });
       }
+
+      // let followerUser = await User.findOneAndUpdate(
+      //   { username: req.params.username },
+      //   {
+      //     $push: { follower: currentUser.username },
+      //   },
+      //   { new: true }
+      // );
+      // console.log(followerUser, "follower user.");
+      
+      res.json({
+        profile: {
+          username: followerUser.username,
+          bio: followerUser.bio,
+          image: followerUser.image,
+          following: followerUser.follower.includes(currentUser.username),
+        },
+      });
+
     } catch (error) {
       res.json({ success: false, error });
     }
@@ -81,25 +109,30 @@ router.delete(
   "/api/profiles/:username/follow",
   auth.verifyToken,
   async (req, res, next) => {
-    // Searching for the user to unfollow.
-    let unfollowUser = await User.findOne({ username: req.params.username });
-    console.log(unfollowUser, "this is unfollow.");
+    try {
+      // Searching for the user to unfollow.
+      let unfollowUser = await User.findOne({ username: req.params.username });
+      console.log(unfollowUser, "this is unfollow.");
 
-    let findUser = await User.findById(req.user.userId);
+      let findUser = await User.findById(req.user.userId);
 
-    // If user is not found.
-    if (!unfollowUser)
-      return res.json({ success: false, message: "User not found." });
+      // If user is not found.
+      if (!unfollowUser)
+        return res.json({ success: false, message: "User not found." });
 
-    if (findUser.following.includes(unfollowUser.username)) {
-      let currentUser = await User.findByIdAndUpdate(
-        req.user.userId,
-        { $pull: { following: unfollowUser.username } },
-        { new: true }
-      );
-      console.log(currentUser, "user unfollowed.");
-    } else {
-      res.json({ success: false, message: "Already unfollowed." });
+      if (findUser.following.includes(unfollowUser.username)) {
+        let currentUser = await User.findByIdAndUpdate(
+          req.user.userId,
+          { $pull: { following: unfollowUser.username } },
+          { new: true }
+        );
+        console.log(currentUser, "user unfollowed.");
+        res.json({ success: true, message: "user unfollowed successfully." });
+      } else {
+        res.json({ success: false, message: "Already unfollowed." });
+      }
+    } catch (error) {
+      next(error);
     }
   }
 );

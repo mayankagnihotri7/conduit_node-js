@@ -6,13 +6,18 @@ var mongoose = require('mongoose');
 
 var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users');
+var articlesRouter = require('./routes/articles');
 
 var app = express();
 
 // connect to db.
-mongoose.connect('mongodb://localhost/conduit', { useNewUrlParser: true, useUnifiedTopology: true }, (err) => {
-    console.log('Connected:', err ? false : true);
-})
+mongoose.connect(
+  "mongodb://localhost/conduit",
+  { useNewUrlParser: true, useUnifiedTopology: true, useFindAndModify: false },
+  (err) => {
+    console.log("Connected:", err ? false : true);
+  }
+);
 
 app.use(logger('dev'));
 app.use(express.json());
@@ -22,5 +27,6 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 app.use('/', indexRouter);
 app.use('/api/users', usersRouter);
+app.use('/api/articles', articlesRouter);
 
 module.exports = app;

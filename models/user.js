@@ -9,7 +9,7 @@ let userSchema = new Schema({
     },
     email: {
         type: String, 
-        unique: true, 
+        unique: true,
         required:true
     },
     password: {
@@ -18,7 +18,8 @@ let userSchema = new Schema({
     },
     bio: String,
     image: String,
-    following: [String]
+    following: [String],
+    follower: [String]
 }, {timestamps: true});
 
 // Hashing the password.
