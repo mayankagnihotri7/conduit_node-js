@@ -28,14 +28,37 @@ router.get("/api/user", auth.verifyToken, async (req, res, next) => {
 
 // Get profile.
 router.get("/api/profiles/:username", async (req, res, next) => {
+  
   try {
     let user = await User.findOne({ username: req.params.username });
+
     res.json({ success: true, username: user.username });
+
     if (!user) {res.json({success: false, message: 'User not found.'})};
+
   } catch (error) {
+
     next(error);
+
   }
 });
+
+// Update user
+router.get('/api/user', auth.verifyToken, (req,res,next) => {
+  
+  try {
+    let user = await User.findByIdAndUpdate(req.user.userId, req.body);
+
+    console.log(user, 'updated user.');
+
+    res.json({success:true, user});
+
+  } catch (error) {
+
+    next(error);
+
+  }
+})
 
 // Follow
 router.post(
