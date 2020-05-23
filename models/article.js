@@ -22,7 +22,7 @@ let articleSchema = new Schema(
     tagList: [String],
     favorited: [String],
     favoriteCount: Number,
-    comment: {type: Schema.Types.ObjectId, ref: 'Comment'}
+    comment: [{type: Schema.Types.ObjectId, ref: 'Comment'}]
   },
   { timestamps: true }
 );

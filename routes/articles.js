@@ -4,7 +4,7 @@ let auth = require("../middlewares/auth");
 let Article = require("../models/article");
 let User = require("../models/user");
 let slug = require("slug");
-let Comment = require('../models/comment');
+let Comment = require("../models/comment");
 
 // Create article.
 router.post("/", auth.verifyToken, async (req, res, next) => {
@@ -168,22 +168,52 @@ router.delete("/:slug/favorite", auth.verifyToken, async (req, res, next) => {
 
 // Add comments to article.
 router.post("/:slug/comments", auth.verifyToken, async (req, res, next) => {
-  
   try {
-
     console.log(req.body, "creating comments.");
 
     let user = await User.findById(req.user.userId);
-    console.log(user, 'finding user');
+    console.log(user, "finding user");
 
-    let article = await Article.findOne({slug: req.params.slug});
-    console.log(article, 'article to be commented on.');
+    req.body.comment.author = user._id;
+    
+    let comment = await Comment.create(req.body.comment);
+    
+    let article = await Article.findOneAndUpdate({ slug: req.params.slug }, {$push: {comment: comment.id}});
+    
+    console.log(comment, "comments");
 
+    res.json({ success: true, message: comment });
   } catch (error) {
-
     next(error);
-
   }
+});
+
+// Get comments from article.
+router.get("/:slug/comments", async (req, res, next) => {
+  let article = await Article.findOne({ slug: req.params.slug }).populate({
+    path: "comment",
+    populate: { path: "author", model: "User" },
+  });
+  res.json({success: true, article});
+  console.log(article, "article hunted.");
+});
+
+// Delete Comment.
+router.delete("/:slug/comments/:id", auth.verifyToken, async (req,res,next) => {
+
+  console.log(req.user.userId, 'inside deleting comments.!');
+
+  let user = await User.findById(req.user.userId);
+
+  console.log(user, 'user here.');
+
+  let article = await Article.findOneAndUpdate({slug: req.params.slug}, {$pull: {comment: req.params.id}},{new:true});
+
+  let comment = await Comment.findByIdAndDelete(req.params.id);
+  
+  console.log(article, 'deleting...');
+
+  res.json({success: true, article, message: 'Comment deleted successfully.'});
 
 });
 
