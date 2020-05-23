@@ -166,12 +166,49 @@ router.delete("/:slug/favorite", auth.verifyToken, async (req, res, next) => {
   }
 });
 
+// List of articles.
+// Filter by tags.
+router.get('/', async (req,res,next) => {
+  
+  try {
+
+    var articles = await Article.find({tagList : { $in: req.body.tagList}}, {new:true});
+
+    let article = articles.map(article => article);
+
+    res.json({success: true, article});
+    
+  } catch (error) {
+    
+    next (error);
+
+  }
+  
+})
+
+// Filter by author name.
+// router.get('/', async (req,res,next) => {
+  
+//   try {
+
+//     var art = await Article.find({author: {$in: req.body.author.username}}, {new:true});
+//     console.log(art, 'author filtered.');
+
+//   } catch (error) {
+
+//     next(error);
+
+//   }
+
+// })
+
 // Add comments to article.
 router.post("/:slug/comments", auth.verifyToken, async (req, res, next) => {
   try {
     console.log(req.body, "creating comments.");
 
     let user = await User.findById(req.user.userId);
+    
     console.log(user, "finding user");
 
     req.body.comment.author = user._id;
@@ -183,19 +220,27 @@ router.post("/:slug/comments", auth.verifyToken, async (req, res, next) => {
     console.log(comment, "comments");
 
     res.json({ success: true, message: comment });
+
   } catch (error) {
+
     next(error);
+
   }
+
 });
 
 // Get comments from article.
 router.get("/:slug/comments", async (req, res, next) => {
+  
   let article = await Article.findOne({ slug: req.params.slug }).populate({
     path: "comment",
     populate: { path: "author", model: "User" },
   });
+
   res.json({success: true, article});
+
   console.log(article, "article hunted.");
+
 });
 
 // Delete Comment.

@@ -20,6 +20,7 @@ router.get("/api/user", auth.verifyToken, async (req, res, next) => {
         token: req.user.token,
       },
     });
+    if (!user) { res.json({success: false, message: 'Invalid.'}) };
   } catch (error) {
     next(error);
   }
@@ -27,8 +28,13 @@ router.get("/api/user", auth.verifyToken, async (req, res, next) => {
 
 // Get profile.
 router.get("/api/profiles/:username", async (req, res, next) => {
-  let user = await User.findOne({ username: req.params.username });
-  res.json({ success: true, username: user.username });
+  try {
+    let user = await User.findOne({ username: req.params.username });
+    res.json({ success: true, username: user.username });
+    if (!user) {res.json({success: false, message: 'User not found.'})};
+  } catch (error) {
+    next(error);
+  }
 });
 
 // Follow
