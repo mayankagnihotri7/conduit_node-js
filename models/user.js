@@ -2,25 +2,28 @@ let mongoose = require('mongoose');
 let Schema = mongoose.Schema;
 let bcrypt = require('bcrypt');
 
-let userSchema = new Schema({
+let userSchema = new Schema(
+  {
     username: {
-        type: String,
-        unique: true
+      type: String,
+      unique: true,
     },
     email: {
-        type: String, 
-        unique: true,
-        required:true
+      type: String,
+      unique: true,
+      required: true,
     },
     password: {
-        type: String,
-        required: true
+      type: String,
+      required: true,
     },
     bio: String,
     image: String,
-    following: [String],
-    follower: [String]
-}, {timestamps: true});
+    following: [{ type: Schema.Types.ObjectId, ref: "User" }],
+    followers: [{ type: Schema.Types.ObjectId, ref: "User" }],
+  },
+  { timestamps: true }
+);
 
 // Hashing the password.
 userSchema.pre('save', async function (next) {
