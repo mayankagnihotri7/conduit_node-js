@@ -44,7 +44,7 @@ router.get("/api/profiles/:username", async (req, res, next) => {
 });
 
 // Update user
-router.get('/api/user', auth.verifyToken, (req,res,next) => {
+router.get('/api/user', auth.verifyToken, async (req,res,next) => {
   
   try {
     let user = await User.findByIdAndUpdate(req.user.userId, req.body);

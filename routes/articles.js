@@ -166,100 +166,127 @@ router.delete("/:slug/favorite", auth.verifyToken, async (req, res, next) => {
   }
 });
 
-// List of articles.
-// Filter by tags.
-router.get('/', async (req,res,next) => {
-  
-  try {
-
-    var articles = await Article.find({tagList : { $in: req.body.tagList}}, {new:true});
-
-    let article = articles.map(article => article);
-
-    res.json({success: true, article});
-    
-  } catch (error) {
-    
-    next (error);
-
-  }
-  
-})
-
-// Filter by author name.
-// router.get('/', async (req,res,next) => {
-  
-//   try {
-
-//     var art = await Article.find({author: {$in: req.body.author.username}}, {new:true});
-//     console.log(art, 'author filtered.');
-
-//   } catch (error) {
-
-//     next(error);
-
-//   }
-
-// })
-
 // Add comments to article.
 router.post("/:slug/comments", auth.verifyToken, async (req, res, next) => {
   try {
     console.log(req.body, "creating comments.");
 
     let user = await User.findById(req.user.userId);
-    
+
     console.log(user, "finding user");
 
     req.body.comment.author = user._id;
-    
+
     let comment = await Comment.create(req.body.comment);
-    
-    let article = await Article.findOneAndUpdate({ slug: req.params.slug }, {$push: {comment: comment.id}});
-    
+
+    let article = await Article.findOneAndUpdate(
+      { slug: req.params.slug },
+      { $push: { comment: comment.id } }
+    );
+
     console.log(comment, "comments");
 
     res.json({ success: true, message: comment });
+  } catch (error) {
+    next(error);
+  }
+});
+
+// Get comments from article.
+router.get("/:slug/comments", async (req, res, next) => {
+  let article = await Article.findOne({ slug: req.params.slug }).populate({
+    path: "comment",
+    populate: { path: "author", model: "User" },
+  });
+
+  res.json({ success: true, article });
+
+  console.log(article, "article hunted.");
+});
+
+// Delete Comment.
+router.delete(
+  "/:slug/comments/:id",
+  auth.verifyToken,
+  async (req, res, next) => {
+    try {
+      console.log(req.user.userId, "inside deleting comments.!");
+
+      let user = await User.findById(req.user.userId);
+
+      console.log(user, "user here.");
+
+      let article = await Article.findOneAndUpdate(
+        { slug: req.params.slug },
+        { $pull: { comment: req.params.id } },
+        { new: true }
+      );
+
+      let comment = await Comment.findByIdAndDelete(req.params.id);
+
+      console.log(article, "deleting...");
+
+      res.json({
+        success: true,
+        article,
+        message: "Comment deleted successfully.",
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+);
+
+// Filter Articles.
+router.get("/", async (req, res, next) => {
+  
+  //Filter by  tags
+  try {
+    // var articles = await Article.find({tagList : { $in: req.body.tagList}}, {new:true});
+
+    // let article = articles.map(article => article);
+
+    // res.json({success: true, article});
+
+    if (req.query.tagList) {
+
+      let articles = await Article.find({
+        tagList: req.query.tagList,
+      }).populate("author", "-password");
+
+      console.log(articles, "filter by tags");
+
+    } else {
+
+      res.json({success: false, message: 'Tag not found.'});
+
+    }
+
+    // Filter by author name.
+    if (req.query.author) {
+
+      let user = await User.find({username: req.query.author});
+      console.log(user, 'finding user.');
+
+    if (user) {
+
+      let articles = await Article.find({ username: user.id }).populate("author", "-password");
+      console.log(articles, 'article filtered.');
+
+      res.json({success: true, articles});
+
+    } else {
+
+      res.json({success: false, message: 'User not found.'});
+
+    }
+  }
 
   } catch (error) {
 
     next(error);
 
   }
-
-});
-
-// Get comments from article.
-router.get("/:slug/comments", async (req, res, next) => {
-  
-  let article = await Article.findOne({ slug: req.params.slug }).populate({
-    path: "comment",
-    populate: { path: "author", model: "User" },
-  });
-
-  res.json({success: true, article});
-
-  console.log(article, "article hunted.");
-
-});
-
-// Delete Comment.
-router.delete("/:slug/comments/:id", auth.verifyToken, async (req,res,next) => {
-
-  console.log(req.user.userId, 'inside deleting comments.!');
-
-  let user = await User.findById(req.user.userId);
-
-  console.log(user, 'user here.');
-
-  let article = await Article.findOneAndUpdate({slug: req.params.slug}, {$pull: {comment: req.params.id}},{new:true});
-
-  let comment = await Comment.findByIdAndDelete(req.params.id);
-  
-  console.log(article, 'deleting...');
-
-  res.json({success: true, article, message: 'Comment deleted successfully.'});
-
 });
 
 module.exports = router;

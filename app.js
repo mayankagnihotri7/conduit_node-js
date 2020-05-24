@@ -7,6 +7,7 @@ var mongoose = require('mongoose');
 var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users');
 var articlesRouter = require('./routes/articles');
+var tagsRouter = require('./routes/tags');
 
 var app = express();
 
@@ -28,5 +29,6 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.use('/', indexRouter);
 app.use('/api/users', usersRouter);
 app.use('/api/articles', articlesRouter);
+app.use('/api/tags', tagsRouter);
 
 module.exports = app;
