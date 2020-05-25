@@ -33,7 +33,7 @@ router.get("/feed", auth.verifyToken, async (req, res, next) => {
     let feedArticle = await Article.find({ author: { $in: user.following } })
       .sort({ updatedAt: -1 })
       .limit(5)
-      .populate("author");
+      .populate("author", "-password");
 
     console.log(feedArticle, "this is feed article.");
 
@@ -47,7 +47,8 @@ router.get("/feed", auth.verifyToken, async (req, res, next) => {
 router.get("/:slug", async (req, res, next) => {
   try {
     let article = await Article.findOne({ slug: req.params.slug }).populate(
-      "author"
+      "author",
+      "-password"
     );
 
     console.log(article, "article found...");
@@ -239,53 +240,54 @@ router.delete(
 
 // Filter Articles.
 router.get("/", async (req, res, next) => {
-  
   //Filter by  tags
   try {
-    // var articles = await Article.find({tagList : { $in: req.body.tagList}}, {new:true});
-
-    // let article = articles.map(article => article);
-
-    // res.json({success: true, article});
-
     if (req.query.tagList) {
-
       let articles = await Article.find({
         tagList: req.query.tagList,
       }).populate("author", "-password");
 
       console.log(articles, "filter by tags");
-
+      res.json({ success: true, articles });
     } else {
-
-      res.json({success: false, message: 'Tag not found.'});
-
+      res.json({ success: false, message: "Tag not found." });
     }
 
     // Filter by author name.
     if (req.query.author) {
+      let user = await User.findOne({ username: req.query.author });
+      console.log(user, "finding user.");
 
-      let user = await User.find({username: req.query.author});
-      console.log(user, 'finding user.');
+      if (user) {
+        let articles = await Article.find({ username: user.id }).populate(
+          "author",
+          "-password"
+        );
+        console.log(articles, "article filtered.");
 
-    if (user) {
-
-      let articles = await Article.find({ username: user.id }).populate("author", "-password");
-      console.log(articles, 'article filtered.');
-
-      res.json({success: true, articles});
-
-    } else {
-
-      res.json({success: false, message: 'User not found.'});
-
+        res.json({ success: true, articles });
+      } else {
+        res.json({ success: false, message: "User not found." });
+      }
     }
-  }
 
+    // Filter by favorited.
+    if (req.query.favorited) {
+      let user = await User.findOne({ username: req.query.favorited });
+      console.log(user, "finding user.");
+
+      if (user) {
+        let articles = await Article.find({ username: user.id }).populate(
+          "author",
+          "-password"
+        );
+        res.json({ success: true, articles });
+      } else {
+        res.json({ success: false, message: "Wrong input." });
+      }
+    }
   } catch (error) {
-
     next(error);
-
   }
 });
 
