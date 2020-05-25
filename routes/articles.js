@@ -277,7 +277,7 @@ router.get("/", async (req, res, next) => {
       console.log(user, "finding user.");
 
       if (user) {
-        let articles = await Article.find({ username: user.id }).populate(
+        let articles = await Article.find({ favorited: user.id }).populate(
           "author",
           "-password"
         );
