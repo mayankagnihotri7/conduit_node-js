@@ -242,6 +242,14 @@ router.delete(
 // Filter Articles.
 router.get("/", async (req, res, next) => {
   try {
+    
+    // List all articles.
+    if (!req.query.tagList || !req.query.author || !req.query.favorited) {
+      let allArticles = await Article.find({});
+
+      res.json({ success: true, allArticles });
+    }
+
     //Filter by  tags
     if (req.query.tagList) {
       let articles = await Article.find({
@@ -287,14 +295,6 @@ router.get("/", async (req, res, next) => {
         res.json({ success: false, message: "Wrong input." });
       }
     }
-
-    // List all articles.
-    if (!req.query.tagList || !req.query.author || !req.query.favorited) {
-      let allArticles = await Article.find({});
-
-      res.json({ success: true, allArticles });
-    }
-    
   } catch (error) {
     next(error);
   }

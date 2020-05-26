@@ -81,7 +81,7 @@ router.post(
         },
         { new: true }
       );
-      res.json({ success: true, followedUsercurrentUser });
+      res.json({ success: true, currentUser });
       
     } catch (error) {
       res.json({ success: false, error });
