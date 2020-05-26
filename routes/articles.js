@@ -245,11 +245,11 @@ router.get("/", async (req, res, next) => {
     
     // List all articles.
     if (!req.query.tagList || !req.query.author || !req.query.favorited) {
-      let allArticles = await Article.find({});
+      let allArticles = await Article.find({}).populate("author", "-password");
 
       res.json({ success: true, allArticles });
     }
-
+    
     //Filter by  tags
     if (req.query.tagList) {
       let articles = await Article.find({
@@ -258,8 +258,6 @@ router.get("/", async (req, res, next) => {
 
       console.log(articles, "filter by tags");
       res.json({ success: true, articles });
-    } else {
-      res.json({ success: false, message: "Wrong Input" });
     }
 
     // Filter by author name.
