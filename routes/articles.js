@@ -37,7 +37,7 @@ router.get("/feed", auth.verifyToken, async (req, res, next) => {
 
     console.log(feedArticle, "this is feed article.");
 
-    res.json({success:true, feedArticle });
+    res.json({ success: true, feedArticle });
   } catch (error) {
     next(error);
   }
@@ -159,7 +159,7 @@ router.delete("/:slug/favorite", auth.verifyToken, async (req, res, next) => {
         { new: true }
       ).populate("author", "-password");
       console.log(article, "we are unfavorite.");
-      res.json({success:true, article});
+      res.json({ success: true, article });
     } else {
       res.json({ success: false, message: "Already unfavorited it." });
     }
@@ -241,8 +241,8 @@ router.delete(
 
 // Filter Articles.
 router.get("/", async (req, res, next) => {
-  //Filter by  tags
   try {
+    //Filter by  tags
     if (req.query.tagList) {
       let articles = await Article.find({
         tagList: req.query.tagList,
@@ -251,7 +251,7 @@ router.get("/", async (req, res, next) => {
       console.log(articles, "filter by tags");
       res.json({ success: true, articles });
     } else {
-      res.json({ success: false, message: "Tag not found." });
+      res.json({ success: false, message: "Wrong Input" });
     }
 
     // Filter by author name.
@@ -287,6 +287,14 @@ router.get("/", async (req, res, next) => {
         res.json({ success: false, message: "Wrong input." });
       }
     }
+
+    // List all articles.
+    if (!req.query.tagList || !req.query.author || !req.query.favorited) {
+      let allArticles = await Article.find({});
+
+      res.json({ success: true, allArticles });
+    }
+    
   } catch (error) {
     next(error);
   }
