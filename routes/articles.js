@@ -37,7 +37,7 @@ router.get("/feed", auth.verifyToken, async (req, res, next) => {
 
     console.log(feedArticle, "this is feed article.");
 
-    res.json({ feedArticle });
+    res.json({success:true, feedArticle });
   } catch (error) {
     next(error);
   }
@@ -70,7 +70,7 @@ router.put("/:slug", auth.verifyToken, async (req, res, next) => {
       { slug: req.params.slug },
       req.body.article,
       { new: true }
-    );
+    ).populate("author", "-password");
 
     res.json({ success: true, article });
 
@@ -122,7 +122,7 @@ router.post("/:slug/favorite", auth.verifyToken, async (req, res, next) => {
           $addToSet: { favorited: req.user.userId },
         },
         { new: true }
-      );
+      ).populate("author", "-password");
 
       console.log(req.user.userId, "doing the article.");
 
@@ -157,8 +157,9 @@ router.delete("/:slug/favorite", auth.verifyToken, async (req, res, next) => {
         { slug: req.params.slug },
         { $pull: { favorited: req.user.userId } },
         { new: true }
-      );
+      ).populate("author", "-password");
       console.log(article, "we are unfavorite.");
+      res.json({success:true, article});
     } else {
       res.json({ success: false, message: "Already unfavorited it." });
     }

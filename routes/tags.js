@@ -5,14 +5,24 @@ let Article = require("../models/article");
 
 router.get("/", async (req, res, next) => {
   try {
-    var articles = await Article.find(
-      { tagList: { $in: req.body.tagList } },
-      { new: true }
-    );
 
-    let article = articles.map((article) => article);
+    // if (req.body.tagList) {
+    //   console.log(req.body, 'taglist here');
+    // } else {
+    //   res.json({success: false, message: 'Tag doesnt exist'});
+    // }
+    
+    // var articles = await Article.find(
+    //   {},"tagList",
+    //   { new: true }
+    // );
 
-    res.json({ success: true, article });
+    var distinctTags = await Article.find({}).distinct("tagList")
+    // console.log(articles, 'articles here');
+
+    // let allTags = articles.map((article) => article.tagList).flat();
+
+    res.json({ success: true, distinctTags });
   } catch (error) {
     next(error);
   }
